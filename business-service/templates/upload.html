@@ -1,0 +1,15 @@
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{{ .title }}</title>
+	</head>
+	<body>
+		<h1>上传PDF文件</h1>
+		<form action="/upload" method="post" enctype="multipart/form-data">
+			<label for="file">选择文件:</label>
+			<input type="file" id="file" name="file" accept="application/pdf" />
+			<button type="submit">上传</button>
+		</form>
+	</body>
+</html>
