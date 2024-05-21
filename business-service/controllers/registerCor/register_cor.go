@@ -2,6 +2,7 @@ package registercor
 
 import (
 	"businessservice/model"
+	"businessservice/tool"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,9 +18,9 @@ func (RegisterControllers) RegisterGetCor(ctx *gin.Context) {
 }
 
 func (RegisterControllers) RegisterPostCor(ctx *gin.Context) {
-	user := &model.User{}
-	if err := ctx.ShouldBind(&user);err == nil {
-		ctx.JSON(http.StatusOK,user)
+	personal := &model.User{}
+	if err := ctx.ShouldBind(&personal);err == nil {
+		tool.SearchDb(*personal,ctx,"register")
 	}else{
 		ctx.JSON(http.StatusOK,gin.H{
 			"err":err.Error(),

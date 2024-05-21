@@ -1,14 +1,27 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>{{ .title }}</title>
+		<title>Upload PDF</title>
 	</head>
 	<body>
-		<h1>上传PDF文件</h1>
 		<form action="/upload" method="post" enctype="multipart/form-data">
-			<label for="file">选择文件:</label>
-			<input type="file" id="file" name="file" accept="application/pdf" />
+			<label for="file">选择您需要的PDF文件:</label>
+			<input
+				type="file"
+				id="file"
+				name="file"
+				accept=".pdf"
+				accept="application/pdf"
+				required
+			/><br /><br />
+
+			<label for="demand">选择您的需求:</label>
+			<select id="demand" name="demand">
+				<option value="merge">合并</option>
+				<option value="split">拆分</option>
+				<option value="watermark">加水印</option></select
+			><br /><br />
+
 			<button type="submit">上传</button>
 		</form>
 	</body>
