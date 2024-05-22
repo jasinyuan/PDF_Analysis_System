@@ -3,6 +3,7 @@ package main
 import (
 	"businessservice/routes"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,5 +33,11 @@ func main() {
 			"Message": "文件处理失败",
 		})
 	})
+
+	// Start the server
+	port := os.Getenv("BUSINESS_SERVICE_PORT")
+	if port == "" {
+		port = "8080"
+	}
 	r.Run()
 }
