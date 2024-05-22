@@ -1,11 +1,14 @@
 package uploadcor
 
 import (
+	"context"
+	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -38,7 +41,7 @@ func (ctrl UploadControllers) UploadPostCor(ctx *gin.Context) {
 	}
 
 	// 获取需求功能
-	demand,_ := ctx.FormFile("demand")
+	demand := ctx.PostForm("demand")
 
 	// 设置上传至本地的路径
 	dst := path.Join("./static",file.Filename)
@@ -59,11 +62,13 @@ func (ctrl UploadControllers) UploadPostCor(ctx *gin.Context) {
         return
     }
 
+	encodedFileContent := base64.StdEncoding.EncodeToString(fileContent)
+
 	// 组合消息文件内容
 	message := map[string]interface{}{
 		"demand":demand,
 		"fileName":file.Filename,
-		"fileData":fileContent,
+		"fileData":encodedFileContent,
 	}
 
 	messageJSON,err := json.Marshal(message)
@@ -80,8 +85,36 @@ func (ctrl UploadControllers) UploadPostCor(ctx *gin.Context) {
 			"err": "pdf消息发布失败",
 		})
         return
-	}else{
-		ctx.Redirect(http.StatusMovedPermanently,"/pop-ups")
 	}
 
+	// 等待处理完成的消息
+	responseChan := make(chan string)
+	go func() {
+		message := subscribeChannel(ctx, ctrl.rdb)
+		responseChan <- message
+		close(responseChan)
+	}()
+
+	select {
+	case response := <-responseChan:
+		if response == "finish" {
+			ctx.Redirect(http.StatusMovedPermanently,"/finish")
+		}else{
+			ctx.Redirect(http.StatusMovedPermanently,"/file")
+		}
+	case <-time.After(15 * time.Second):
+		ctx.JSON(http.StatusGatewayTimeout, gin.H{"err": "等待处理消息超时"})
+	}
+}
+
+func subscribeChannel(ctx context.Context, rdb *redis.Client,) string{
+	pubsub := rdb.Subscribe(ctx, "finish_channel")
+	defer pubsub.Close()
+
+	ch := pubsub.Channel()
+
+	for msg := range ch {
+		return msg.Payload
+	}
+	return "flie"
 }

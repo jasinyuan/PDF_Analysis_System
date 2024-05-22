@@ -22,5 +22,15 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/login")
 	})
+	r.GET("/finish",func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "result.html", gin.H{
+			"Message": "文件处理完成",
+		})
+	})
+	r.GET("/file",func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "result.html", gin.H{
+			"Message": "文件处理失败",
+		})
+	})
 	r.Run()
 }
