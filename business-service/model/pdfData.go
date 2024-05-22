@@ -14,7 +14,7 @@ var (
 
 func init()  {
 	rdb = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: "127.0.0.1:6379",
 		Password: "redis",
 		DB: 0,
 	})
@@ -24,4 +24,9 @@ func init()  {
     if err != nil {
         log.Fatalf("Failed to connect to Redis: %v", err)
     }
+}
+
+// GetRedisClient 返回 Redis 客户端
+func GetRedisClient() *redis.Client {
+    return rdb
 }

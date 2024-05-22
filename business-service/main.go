@@ -17,6 +17,7 @@ func main() {
 	routes.Login(r)
 	routes.Register(r)
 	routes.Register_success(r)
+	routes.Pop_success(r)
 	// 将页面默认路由重定向
 	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/login")

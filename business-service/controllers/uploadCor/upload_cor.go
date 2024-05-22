@@ -1,7 +1,9 @@
 package uploadcor
 
 import (
+	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 
@@ -10,6 +12,11 @@ import (
 )
 
 type UploadControllers struct {
+	rdb *redis.Client
+}
+
+func NewUploadController(rdb *redis.Client) *UploadControllers {
+    return &UploadControllers{rdb: rdb}
 }
 
 /* 上传页面的HTML模板 */
@@ -20,7 +27,7 @@ func (UploadControllers) UploadGetCor(ctx *gin.Context) {
 }
 
 /* 上传文件发布消息 */
-func (UploadControllers) UploadPostCor(ctx *gin.Context, rdb *redis.Client) {
+func (ctrl UploadControllers) UploadPostCor(ctx *gin.Context) {
 	// 获取传入的文件
 	file,err := ctx.FormFile("file")
 	if err != nil {
@@ -59,13 +66,22 @@ func (UploadControllers) UploadPostCor(ctx *gin.Context, rdb *redis.Client) {
 		"fileData":fileContent,
 	}
 
-	// redis发布信息
-	err = rdb.Publish(ctx, "pdf_channel", message).Err()
+	messageJSON,err := json.Marshal(message)
 	if err != nil {
+		log.Printf("序列化消息失败: %v", err)
+		return
+	}
+
+	// redis发布信息
+	err = ctrl.rdb.Publish(ctx, "pdf_channel", messageJSON).Err()
+	if err != nil {
+		log.Printf("消息发送至redis失败: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"err": "pdf消息发布失败",
 		})
         return
+	}else{
+		ctx.Redirect(http.StatusMovedPermanently,"/pop-ups")
 	}
 
 }
